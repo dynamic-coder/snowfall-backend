@@ -5,10 +5,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = process.env.GEMINI_API_KEY;
+const API_KEY = process.env.GROQ_API_KEY;
 
 if (!API_KEY) {
-  console.error("❌ GEMINI_API_KEY missing in .env file");
+  console.error("❌ GROQ_API_KEY missing");
   process.exit(1);
 }
 
@@ -21,17 +21,18 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${API_KEY}`
         },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: userMessage }]
-            }
+          model: "llama3-8b-8192",
+          messages: [
+            { role: "system", content: "You are SNOWFALL, a helpful AI assistant." },
+            { role: "user", content: userMessage }
           ]
         })
       }
@@ -39,27 +40,24 @@ app.post("/chat", async (req, res) => {
 
     const data = await response.json();
 
-    console.log("🔍 Gemini Raw Response:", data);
-
     if (!response.ok) {
       return res.status(response.status).json({
-        reply: data.error?.message || "Gemini API error"
+        reply: data.error?.message || "Groq API error"
       });
     }
 
     const reply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response from Gemini";
+      data.choices?.[0]?.message?.content || "No response from Groq";
 
     res.json({ reply });
 
   } catch (error) {
-    console.error("🔥 Server Error:", error);
+    console.error("Server Error:", error);
     res.status(500).json({ reply: "Internal server error" });
   }
 });
 
-app.listen(3000, () => {
-  console.log("🚀 Server running on http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
