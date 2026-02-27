@@ -30,10 +30,16 @@ app.post("/chat", async (req, res) => {
           "Authorization": `Bearer ${API_KEY}`
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192",
+          model: "llama-3.1-8b-instant",   // ✅ Updated model
           messages: [
-            { role: "system", content: "You are SNOWFALL, a helpful AI assistant." },
-            { role: "user", content: userMessage }
+            {
+              role: "system",
+              content: "You are SNOWFALL, a calm, intelligent AI assistant."
+            },
+            {
+              role: "user",
+              content: userMessage
+            }
           ]
         })
       }
@@ -48,7 +54,7 @@ app.post("/chat", async (req, res) => {
     }
 
     const reply =
-      data.choices?.[0]?.message?.content || "No response from Groq";
+      data.choices?.[0]?.message?.content || "No response from SNOWFALL";
 
     res.json({ reply });
 
@@ -60,5 +66,5 @@ app.post("/chat", async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 SNOWFALL running on port ${PORT}`);
 });
